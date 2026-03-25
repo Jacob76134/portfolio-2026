@@ -1,6 +1,13 @@
 export default defineNuxtConfig({
   modules: ['@nuxt/content', '@nuxtjs/tailwindcss'],
 
+  nitro: {
+    prerender: {
+      crawlLinks: true,
+      routes: ['/']
+    }
+  },
+
   content: {
     highlight: {
       theme: 'github-light'
