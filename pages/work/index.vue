@@ -37,10 +37,13 @@
       <NuxtLink to="/" class="text-sm uppercase tracking-widest text-[#aaa] hover:text-[#1a1a1a] transition-colors no-underline">← Back home</NuxtLink>
     </footer>
 
+    <Footer></Footer>
+
   </div>
 </template>
 
 <script setup>
+import Footer from '../../components/footer.vue';
 import Navigation from '../../components/navigation.vue';
 
 const { data: work } = await useAsyncData('work', () =>

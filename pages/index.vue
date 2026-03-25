@@ -77,19 +77,13 @@
     </section>
 
     <!-- Footer -->
-    <footer class="flex justify-between items-center py-10 fade-up" style="animation-delay:0.65s">
-      <span class="text-xs uppercase tracking-widest text-[#aaa]">© {{ new Date().getFullYear() }} Jacob Brewer</span>
-      <div class="flex gap-6">
-        <a href="https://github.com" target="_blank" class="text-xs uppercase tracking-widest text-[#aaa] hover:text-[#1a1a1a] transition-colors no-underline">GitHub</a>
-        <a href="https://linkedin.com" target="_blank" class="text-xs uppercase tracking-widest text-[#aaa] hover:text-[#1a1a1a] transition-colors no-underline">LinkedIn</a>
-        <a href="mailto:jacobbrewerrooney@gmail.com" class="text-xs uppercase tracking-widest text-[#aaa] hover:text-[#1a1a1a] transition-colors no-underline">Email</a>
-      </div>
-    </footer>
+    <Footer></Footer>
 
   </div>
 </template>
 
 <script setup>
+import Footer from '../components/footer.vue';
 import Navigation from '../components/navigation.vue';
 
 const { data: hero } = await useAsyncData('home', () =>
