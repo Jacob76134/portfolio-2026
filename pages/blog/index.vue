@@ -5,7 +5,7 @@
 
     <section class="pt-20">
       <h1 class="font-serif font-normal text-6xl mb-4">Writing</h1>
-      <p class="text-sm leading-loose text-[#666]">Notes on software, web apps, and things I figure out while building.</p>
+      <p class="text-sm leading-loose text-[#666]">Notes on software, web apps, and things I figure out while building. Updating week-daily</p>
     </section>
 
     <section class="py-14">
