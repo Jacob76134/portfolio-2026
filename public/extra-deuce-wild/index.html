@@ -31,9 +31,11 @@
     header a { color: var(--muted); }
     main { flex: 1; display: flex; flex-direction: column; min-height: 0; margin-top: 10px; }
     #terminal {
-      flex: 1; min-height: 240px; background: var(--panel);
+      flex: 1; min-height: 240px; display: flex; background: var(--panel);
       border: 1px solid var(--border); border-radius: 8px; padding: 8px; overflow: hidden;
     }
+    /* xterm measures its parent to fit rows, so the parent has no padding. */
+    #screen { flex: 1; min-width: 0; min-height: 0; }
     /* xterm's scroll area: match the panel, no light scrollbar track. */
     .xterm .xterm-viewport { background-color: var(--panel) !important; scrollbar-color: var(--border) var(--panel); }
     #keys { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
@@ -66,7 +68,7 @@
     <p>Playtest build. Type a number and press Enter, or tap the keys. <kbd>h</kbd> for help.</p>
   </header>
   <main>
-    <div id="terminal" aria-label="Game terminal"></div>
+    <div id="terminal" aria-label="Game terminal"><div id="screen"></div></div>
     <div id="keys" aria-label="Quick keys">
       <button>1</button><button>2</button><button>3</button><button>4</button><button>5</button>
       <button>6</button><button>7</button><button>8</button><button>9</button>
@@ -86,7 +88,7 @@
   <script src="deuce.js"></script>
   <script>
     (() => {
-      const box = document.getElementById('terminal');
+      const box = document.getElementById('screen');
       const fontFamily = 'ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace';
 
       // 80 columns if they fit at a readable size (12px or more); on a phone,
@@ -100,7 +102,7 @@
         probe.remove();
         return w;
       };
-      const inner = box.clientWidth - 16 - 14;  // Padding, and room for the scrollbar.
+      const inner = box.clientWidth - 14;  // Room for the scrollbar.
       let fontSize = 18;
       while (fontSize > 12 && charWidth(fontSize) * 80 > inner) fontSize -= 0.5;
       const term = new Terminal({
@@ -122,6 +124,12 @@
       const size = fit.proposeDimensions() ?? { cols: 80, rows: 30 };
       const cols = Math.max(40, Math.min(80, size.cols));
       term.resize(cols, Math.max(12, size.rows));
+      // Keep the rows fitted when the window changes (a phone's address bar
+      // hides, a rotation). The columns stay: the game wraps to them.
+      new ResizeObserver(() => {
+        const rows = fit.proposeDimensions()?.rows;
+        if (rows && rows !== term.rows) term.resize(cols, Math.max(12, rows));
+      }).observe(box);
       term.focus();
       window.deuceTerminal = term;  // For automated tests and debugging.
 
