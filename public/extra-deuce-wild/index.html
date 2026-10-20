@@ -24,7 +24,7 @@
       display: flex; flex-direction: column; align-items: center;
       padding: 12px 16px;
     }
-    header, main, footer { width: 100%; max-width: 900px; }
+    header, main, footer { width: 100%; max-width: 1400px; }
     header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
     h1 { font-size: 1.1rem; margin: 0; letter-spacing: 0.08em; color: var(--accent); }
     header p { margin: 0; color: var(--muted); font-size: 0.85rem; }
@@ -91,22 +91,34 @@
       const box = document.getElementById('screen');
       const fontFamily = 'ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace';
 
-      // 80 columns if they fit at a readable size (12px or more); on a phone,
-      // 12px and as many columns as fit (the game wraps to fit).
-      const charWidth = (size) => {
+      // The largest readable font (13px or more) that fits a whole turn: the
+      // score, the court, the cards and the prompt, about 36 rows, with
+      // four cards across (129 columns), else three (97), else 80. On a
+      // short screen, as many rows as a readable font allows. Failing that
+      // (a phone), 12px and as many columns as fit: the game wraps.
+      const cellSize = (size) => {
         const probe = document.createElement('span');
-        probe.style.cssText = `font: ${size}px ${fontFamily}; position: absolute; visibility: hidden; white-space: pre`;
+        probe.style.cssText = `font: ${size}px ${fontFamily}; line-height: normal; position: absolute; visibility: hidden; white-space: pre`;
         probe.textContent = 'M'.repeat(100);
         document.body.appendChild(probe);
-        const w = probe.getBoundingClientRect().width / 100;
+        const rect = probe.getBoundingClientRect();
         probe.remove();
-        return w;
+        return { width: rect.width / 100, height: rect.height };
       };
       const inner = box.clientWidth - 14;  // Room for the scrollbar.
-      let fontSize = 18;
-      while (fontSize > 12 && charWidth(fontSize) * 80 > inner) fontSize -= 0.5;
+      const fits = (size, columns, rows) => {
+        const cell = cellSize(size);
+        return cell.width * columns <= inner && cell.height * rows <= box.clientHeight;
+      };
+      const largestFitting = (columns, rows) => {
+        for (let size = 17; size >= 13; size -= 0.5) if (fits(size, columns, rows)) return size;
+        return null;
+      };
+      const fontSize = largestFitting(129, 36) ?? largestFitting(97, 36) ?? largestFitting(80, 36) ??
+                       largestFitting(97, 30) ?? largestFitting(80, 30) ?? largestFitting(80, 24) ??
+                       largestFitting(80, 0) ?? 12;
       const term = new Terminal({
-        fontSize, fontFamily, lineHeight: 1.1,
+        fontSize, fontFamily, lineHeight: 1.0,
         convertEol: true, cursorBlink: true, scrollback: 5000,
         theme: { background: '#151a1f', foreground: '#d8dee4', cursor: '#e3b341' },
       });
@@ -118,11 +130,11 @@
       } catch {
         try { term.loadAddon(new CanvasAddon.CanvasAddon()); } catch { /* The DOM renderer still works. */ }
       }
-      // Fill the box, but never wider than the game's 80 columns.
+      // Fill the box, up to 160 columns (five cards across).
       const fit = new FitAddon.FitAddon();
       term.loadAddon(fit);
       const size = fit.proposeDimensions() ?? { cols: 80, rows: 30 };
-      const cols = Math.max(40, Math.min(80, size.cols));
+      const cols = Math.max(40, Math.min(160, size.cols));
       term.resize(cols, Math.max(12, size.rows));
       // Keep the rows fitted when the window changes (a phone's address bar
       // hides, a rotation). The columns stay: the game wraps to them.
